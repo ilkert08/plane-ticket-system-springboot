@@ -1,7 +1,9 @@
 package com.internship.firstbackend.Controller;
 
+import com.internship.firstbackend.dbconnector.MongoConnector;
 import com.internship.firstbackend.model.Airport;
 import com.internship.firstbackend.model.City;
+import com.internship.firstbackend.model.Plane;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ public class CityController {
         cityList = new ArrayList<City>();
 
         String[] arr = {"30", "40"};
+
         City city1 = new City("34", "İstanbul", "Türkiye");
         City city2 = new City("35", "İzmir", "Türkiye");
         City city3 = new City("55", "Samsun","Türkiye");
@@ -26,28 +29,37 @@ public class CityController {
 
     }
 
+    @GetMapping("/citytest")
+    public ArrayList<City> cityTest(){
+        return cityList;
+
+    }
+
 
     @GetMapping("/cities")
-    public ArrayList<City> getAllAirports(){
+    public ArrayList<City> getAllCities(){
+        MongoConnector mongoConnection = new MongoConnector();
+        cityList = mongoConnection.getCities();
+        mongoConnection.closeConnection();
         return cityList;
     }
 
     @GetMapping("/city")
     public City getCityById(@RequestParam(value = "id", defaultValue = "id1") String requestedCityId){
-        for (int i = 0; i < cityList.size(); i++) {
-            City currentCity = cityList.get(i);
-            if(currentCity.getCityId().equals(requestedCityId)){
-                return currentCity;
-            }
+        MongoConnector mongoConnection = new MongoConnector();
+        City requestedCity = mongoConnection.getCityById(requestedCityId);
+
+        if(requestedCity != null){
+            return requestedCity;
         }
         return null;
     }
 
     @PostMapping("/newcity")
-    public City addPlane(@RequestBody City newCity){
-        cityList.add(newCity);
-        return cityList.get(cityList.size() - 1);
+    public City addCity(@RequestBody City newCity){
+        MongoConnector mongoConnection = new MongoConnector();
+        mongoConnection.addCity(newCity);
+        return newCity;
     }
-
 
 }

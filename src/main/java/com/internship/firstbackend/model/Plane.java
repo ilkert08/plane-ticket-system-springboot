@@ -26,6 +26,26 @@ public class Plane {
 
     }
 
+    public void setPlaneId(String planeId) {
+        this.planeId = planeId;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public void setPlaneBrand(String planeBrand) {
+        this.planeBrand = planeBrand;
+    }
+
+    public void setPlaneModel(String planeModel) {
+        this.planeModel = planeModel;
+    }
+
+    public void setPlaneSpeed(float planeSpeed) {
+        this.planeSpeed = planeSpeed;
+    }
+
     public String getPlaneId() {
         return planeId;
     }

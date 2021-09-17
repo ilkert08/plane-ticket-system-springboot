@@ -6,13 +6,13 @@ public class Passenger {
     private String tc;
     private String name;
     private String surname;
-    private Date borndate;
+    private String borndate;
 
     public Passenger(){
 
     }
 
-    public Passenger(String tc, String name, String surname, Date borndate) {
+    public Passenger(String tc, String name, String surname, String borndate) {
         this.tc = tc;
         this.name = name;
         this.surname = surname;
@@ -31,7 +31,33 @@ public class Passenger {
         return surname;
     }
 
-    public Date getBorndate() {
+    public String getBorndate() {
         return borndate;
+    }
+
+    public void setTc(String tc) {
+        this.tc = tc;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
+    public void setBorndate(String borndate) {
+        this.borndate = borndate;
+    }
+
+    @Override
+    public String toString() {
+        return "Passenger{" +
+                "tc='" + tc + '\'' +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", borndate=" + borndate +
+                '}';
     }
 }

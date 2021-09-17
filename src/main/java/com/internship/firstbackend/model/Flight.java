@@ -2,6 +2,7 @@ package com.internship.firstbackend.model;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class Flight {
     private String flightId;
@@ -9,10 +10,10 @@ public class Flight {
     private String arrival;
     private float flightTime;
     private String planeId;
-    private Calendar flightDate;
-    private int[] sittingPlan;
+    private String flightDate; //TODO Calendar veri tipi mongo db kabul etmiyor!!
+    private List<Integer> sittingPlan;
 
-    public Flight(String flightId, String departure, String arrival, Float flightTime, String planeId, Calendar flightDate, int[] sittingPlan ) {
+    public Flight(String flightId, String departure, String arrival, Float flightTime, String planeId, String flightDate, List<Integer> sittingPlan ) {
         this.flightId = flightId;
         this.departure = departure;
         this.arrival = arrival;
@@ -45,9 +46,51 @@ public class Flight {
         return planeId;
     }
 
-    public Calendar getFlightDate() {
+    public String getFlightDate() {
         return flightDate;
     }
 
-    public int[] getSittingPlan() { return sittingPlan; }
+    public List<Integer> getSittingPlan() { return sittingPlan; }
+
+    public void setFlightId(String flightId) {
+        this.flightId = flightId;
+    }
+
+    public void setDeparture(String departure) {
+        this.departure = departure;
+    }
+
+    public void setArrival(String arrival) {
+        this.arrival = arrival;
+    }
+
+    public void setFlightTime(float flightTime) {
+        this.flightTime = flightTime;
+    }
+
+    public void setPlaneId(String planeId) {
+        this.planeId = planeId;
+    }
+
+    public void setFlightDate(String flightDate) {
+        this.flightDate = flightDate;
+    }
+
+    public void setSittingPlan(List<Integer> sittingPlan) {
+        this.sittingPlan = sittingPlan;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Flight{" +
+                "flightId='" + flightId + '\'' +
+                ", departure='" + departure + '\'' +
+                ", arrival='" + arrival + '\'' +
+                ", flightTime=" + flightTime +
+                ", planeId='" + planeId + '\'' +
+                ", flightDate=" + flightDate +
+                ", sittingPlan=" + sittingPlan +
+                '}';
+    }
 }

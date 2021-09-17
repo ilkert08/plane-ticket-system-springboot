@@ -2,6 +2,7 @@ package com.internship.firstbackend.Controller;
 
 import com.internship.firstbackend.dbconnector.MongoConnector;
 import com.internship.firstbackend.model.Plane;
+import org.json.simple.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -27,25 +28,36 @@ public class PlaneController {
     public ArrayList<Plane> getAllPlanes(){
         MongoConnector mongoConnection = new MongoConnector();
         planeList = mongoConnection.getPlanes();
+        mongoConnection.closeConnection();
 
         return planeList;
     }
 
     @GetMapping("/plane")
     public Plane getPlaneById(@RequestParam(value = "id", defaultValue = "id1") String requestedPlaneId){
-        for (int i = 0; i < planeList.size(); i++) {
-            Plane currentPlane = planeList.get(i);
-            if(currentPlane.getPlaneId().equals(requestedPlaneId)){
-                return currentPlane;
-            }
+        MongoConnector mongoConnection = new MongoConnector();
+        Plane requestedPlane = mongoConnection.getPlaneById(requestedPlaneId);
+
+        if(requestedPlane != null){
+            return requestedPlane;
         }
+
+        //TODO Hata mesajı bastırmak için ne yapmalıyım? Sor.
+        //JSONObject json = new JSONObject();
+        //json.put("ErrorMessage", "Plane is not in database.");
+
         return null;
     }
 
+
+
+
+
     @PostMapping("/newplane")
     public Plane addPlane(@RequestBody Plane newPlane){
-        planeList.add(newPlane);
-        return planeList.get(planeList.size() - 1);
+        MongoConnector mongoConnection = new MongoConnector();
+        mongoConnection.addPlane(newPlane);
+        return newPlane;
     }
 
 

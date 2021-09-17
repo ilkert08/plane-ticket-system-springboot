@@ -1,12 +1,15 @@
 package com.internship.firstbackend.model;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Airport {
     private String airportId;
     private String name;
     private String cityId;
-    private String[] coordinate;
+    private List<String> coordinate;
 
-    public Airport(String airportId, String name, String cityId, String[] coordinate) {
+    public Airport(String airportId, String name, String cityId, List<String> coordinate) {
         this.airportId = airportId;
         this.name = name;
         this.cityId = cityId;
@@ -29,7 +32,35 @@ public class Airport {
         return cityId;
     }
 
-    public String[] getCoordinate() {
+    public List<String> getCoordinate() {
         return coordinate;
+    }
+
+
+    public void setAirportId(String airportId) {
+        this.airportId = airportId;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setCityId(String cityId) {
+        this.cityId = cityId;
+    }
+
+    public void setCoordinate(List<String> coordinate) {
+        this.coordinate = coordinate;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Airport{" +
+                "airportId='" + airportId + '\'' +
+                ", name='" + name + '\'' +
+                ", cityId='" + cityId + '\'' +
+                ", coordinate=" + coordinate +
+                '}';
     }
 }

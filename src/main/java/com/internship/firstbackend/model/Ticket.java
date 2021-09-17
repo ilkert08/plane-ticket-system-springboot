@@ -33,4 +33,30 @@ public class Ticket {
     public String getPrice() {
         return price;
     }
+
+    public void setTicketId(String ticketId) {
+        this.ticketId = ticketId;
+    }
+
+    public void setTc(String tc) {
+        this.tc = tc;
+    }
+
+    public void setFlightId(String flightId) {
+        this.flightId = flightId;
+    }
+
+    public void setPrice(String price) {
+        this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return "Ticket{" +
+                "ticketId='" + ticketId + '\'' +
+                ", tc='" + tc + '\'' +
+                ", flightId='" + flightId + '\'' +
+                ", price='" + price + '\'' +
+                '}';
+    }
 }
