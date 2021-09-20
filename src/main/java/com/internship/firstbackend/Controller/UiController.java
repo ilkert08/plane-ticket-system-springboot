@@ -7,6 +7,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.MediaType;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,6 +40,11 @@ public class UiController {
         String temp = "<html>\n" + "<header><title>Welcome</title></header>\n" +
                 "<body>\n" + "Hello world\n" + "</body>\n" + "</html>";
         return content;
+    }
+
+    @RequestMapping("/offerView")
+    public String page(){
+        return "example";
     }
 
 

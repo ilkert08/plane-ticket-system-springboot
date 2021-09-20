@@ -34,7 +34,6 @@ public class TicketController {
     public ArrayList<Ticket> getAllTickets(){
         MongoConnector mongoConnection = new MongoConnector();
         ticketList = mongoConnection.getTickets();
-        mongoConnection.closeConnection();
         return ticketList;
     }
 
@@ -55,6 +54,21 @@ public class TicketController {
         mongoConnection.addTicket(newTicket);
         return newTicket;
     }
+
+    @GetMapping("/buyticket")
+    public String buyNewTicket(@RequestParam(value = "tc") String tcNo, @RequestParam(value = "flightid") String flightId,
+                             @RequestParam(value = "seatnumber") int seatNumber){
+        MongoConnector mongoConnection = new MongoConnector();
+        int result = mongoConnection.buyTicket(tcNo, flightId, seatNumber);
+        if(result == 200){
+            return "Bilet başarıyla satın alındı.";
+        }else if(result == 400){
+            return "Koltuk daha önce satın alınmış.";
+        }else{
+            return "Başka bir hata.";
+        }
+    }
+
 
 
 }

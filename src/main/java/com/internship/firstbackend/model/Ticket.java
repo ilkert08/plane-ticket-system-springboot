@@ -5,17 +5,26 @@ public class Ticket {
     private String ticketId;
     private String tc;
     private String flightId;
-    private String price;
+    private int seatNumber;
 
-    public Ticket(String ticketId, String tc, String flightId, String price) {
+    public Ticket(String ticketId, String tc, String flightId, int seatNumber) {
         this.ticketId = ticketId;
         this.tc = tc;
         this.flightId = flightId;
-        this.price = price;
+        this.seatNumber = seatNumber;
     }
 
     public Ticket(){
 
+    }
+
+
+    public int getSeatNumber() {
+        return seatNumber;
+    }
+
+    public void setSeatNumber(int seatNumber) {
+        this.seatNumber = seatNumber;
     }
 
     public String getTicketId() {
@@ -30,10 +39,6 @@ public class Ticket {
         return flightId;
     }
 
-    public String getPrice() {
-        return price;
-    }
-
     public void setTicketId(String ticketId) {
         this.ticketId = ticketId;
     }
@@ -46,9 +51,6 @@ public class Ticket {
         this.flightId = flightId;
     }
 
-    public void setPrice(String price) {
-        this.price = price;
-    }
 
     @Override
     public String toString() {
@@ -56,7 +58,8 @@ public class Ticket {
                 "ticketId='" + ticketId + '\'' +
                 ", tc='" + tc + '\'' +
                 ", flightId='" + flightId + '\'' +
-                ", price='" + price + '\'' +
+                ", seatNumber='" + seatNumber + '\'' +
                 '}';
     }
+
 }

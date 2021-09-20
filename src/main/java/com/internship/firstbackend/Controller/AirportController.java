@@ -42,7 +42,6 @@ public class AirportController {
     public ArrayList<Airport> getAllAirports(){
         MongoConnector mongoConnection = new MongoConnector();
         airportList = mongoConnection.getAirports();
-        mongoConnection.closeConnection();
         return airportList;
 
     }

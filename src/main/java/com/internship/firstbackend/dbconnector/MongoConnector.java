@@ -7,9 +7,13 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.types.ObjectId;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +24,8 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 public class MongoConnector {
     private MongoClient mongoClient;
     private MongoDatabase database;
-    private final ConnectionString mongoUrl = new ConnectionString("mongodb://user1:Password.12345@cluster0-shard-00-00.gxrol.mongodb.net:27017,cluster0-shard-00-01.gxrol.mongodb.net:27017,cluster0-shard-00-02.gxrol.mongodb.net:27017/flightDB?ssl=true&replicaSet=atlas-bkrq6u-shard-0&authSource=admin&retryWrites=true&w=majority");
+    //private final ConnectionString mongoUrl = new ConnectionString("mongodb://user1:Password.12345@cluster0-shard-00-00.gxrol.mongodb.net:27017,cluster0-shard-00-01.gxrol.mongodb.net:27017,cluster0-shard-00-02.gxrol.mongodb.net:27017/flightDB?ssl=true&replicaSet=atlas-bkrq6u-shard-0&authSource=admin&retryWrites=true&w=majority");
+    private final ConnectionString mongoUrl = new ConnectionString("mongodb+srv://user1:Password.12345@cluster0.gxrol.mongodb.net/flightDB?retryWrites=true&w=majority");
 
     public MongoConnector(){
         CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());;
@@ -46,7 +51,7 @@ public class MongoConnector {
             planeList.add(mongoPlane);
             System.out.println(mongoPlane.toString());
         }
-        closeConnection();
+        ////closeConnection();
         return planeList;
     }
 
@@ -57,18 +62,22 @@ public class MongoConnector {
         for (Plane mongoPlane : planes) {
             if(mongoPlane.getPlaneId().equals(requestedPlaneId)){
                 System.out.println(mongoPlane);
-                closeConnection();
+                //closeConnection();
                 return mongoPlane;
             }
         }
-        closeConnection();
+        //closeConnection();
         return null;
     }
 
     public void addPlane(Plane newPlane){
         MongoCollection<Plane> collection = database.getCollection("planes", Plane.class);
+
+        String planeId = new ObjectId().toString(); //Generates unique id
+        newPlane.setPlaneId(planeId);
+
         collection.insertOne(newPlane);
-        closeConnection();
+        //closeConnection();
     }
 
 
@@ -82,7 +91,7 @@ public class MongoConnector {
             cityList.add(mongoCity);
             System.out.println(mongoCity.toString());
         }
-        closeConnection();
+        //closeConnection();
         return cityList;
     }
 
@@ -93,18 +102,22 @@ public class MongoConnector {
         for (City mongoCity : cities) {
             if(mongoCity.getCityId().equals(requestedCityId)){
                 System.out.println(mongoCity);
-                closeConnection();
+                //closeConnection();
                 return mongoCity;
             }
         }
-        closeConnection();
+        //closeConnection();
         return null;
     }
 
     public void addCity(City newCity){
         MongoCollection<City> collection = database.getCollection("cities", City.class);
+
+        String cityId = new ObjectId().toString(); //Generates unique id
+        newCity.setCityId(cityId);
+
         collection.insertOne(newCity);
-        closeConnection();
+        //closeConnection();
     }
 
 
@@ -118,7 +131,7 @@ public class MongoConnector {
             airportList.add(mongoAirport);
             System.out.println(mongoAirport.toString());
         }
-        closeConnection();
+        //closeConnection();
         return airportList;
     }
 
@@ -129,18 +142,22 @@ public class MongoConnector {
         for (Airport mongoAirport : airports) {
             if(mongoAirport.getCityId().equals(requestedAirportId)){
                 System.out.println(mongoAirport);
-                closeConnection();
+                //closeConnection();
                 return mongoAirport;
             }
         }
-        closeConnection();
+        //closeConnection();
         return null;
     }
 
     public void addAirport(Airport newAirport){
         MongoCollection<Airport> collection = database.getCollection("airports", Airport.class);
+
+        String airportId = new ObjectId().toString(); //Generates unique id
+        newAirport.setAirportId(airportId);
+
         collection.insertOne(newAirport);
-        closeConnection();
+        //closeConnection();
     }
 
 
@@ -154,7 +171,7 @@ public class MongoConnector {
             flightList.add(mongoFlight);
             System.out.println(mongoFlight.toString());
         }
-        closeConnection();
+        //closeConnection();
         return flightList;
     }
 
@@ -165,19 +182,37 @@ public class MongoConnector {
         for (Flight mongoFlight : flights) {
             if(mongoFlight.getFlightId().equals(requestedFlightId)){
                 System.out.println(mongoFlight);
-                closeConnection();
+                //closeConnection();
                 return mongoFlight;
             }
         }
-        closeConnection();
         return null;
     }
 
     public void addFlight(Flight newFlight){
+        String flightId = new ObjectId().toString(); //Generates unique id
+        newFlight.setFlightId(flightId);
+
+        List<Integer> sittingPlan = new ArrayList<>();
+        for (int i = 0; i < 200; i++) {
+            sittingPlan.add(0);
+        }
+        newFlight.setSittingPlan(sittingPlan);
+
+
         MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
         collection.insertOne(newFlight);
-        closeConnection();
+        //closeConnection();
     }
+
+    public void updateFlight(Flight updatedFlight){
+        MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
+        collection.updateOne(Filters.eq("flightId", updatedFlight.getFlightId()), Updates.combine(Updates.set("sittingPlan", updatedFlight.getSittingPlan())));
+        //System.out.println(flight);
+    }
+
+
+
 
     public ArrayList<Passenger> getPassengers(){
         ArrayList<Passenger> passengerList = new ArrayList<>();
@@ -188,7 +223,7 @@ public class MongoConnector {
             passengerList.add(mongoPassenger);
             System.out.println(mongoPassenger.toString());
         }
-        closeConnection();
+        //closeConnection();
         return passengerList;
     }
 
@@ -199,18 +234,22 @@ public class MongoConnector {
         for (Passenger mongoPassenger : passengers) {
             if(mongoPassenger.getTc().equals(requestedPassengerId)){
                 System.out.println(mongoPassenger);
-                closeConnection();
+                //closeConnection();
                 return mongoPassenger;
             }
         }
-        closeConnection();
+        //closeConnection();
         return null;
     }
 
     public void addPassenger(Passenger newPassenger){
         MongoCollection<Passenger> collection = database.getCollection("passengers", Passenger.class);
+
+        String passengerId = new ObjectId().toString(); //Generates unique id
+        newPassenger.setTc(passengerId);
+
         collection.insertOne(newPassenger);
-        closeConnection();
+        //closeConnection();
     }
 
 
@@ -223,7 +262,7 @@ public class MongoConnector {
             ticketList.add(mongoTicket);
             System.out.println(mongoTicket.toString());
         }
-        closeConnection();
+        //closeConnection();
         return ticketList;
     }
 
@@ -234,18 +273,41 @@ public class MongoConnector {
         for (Ticket mongoTicket : tickets) {
             if(mongoTicket.getTicketId().equals(requestedTicketId)){
                 System.out.println(mongoTicket);
-                closeConnection();
+                //closeConnection();
                 return mongoTicket;
             }
         }
-        closeConnection();
+        //closeConnection();
         return null;
     }
 
     public void addTicket(Ticket newTicket){
         MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
+
+        String ticketId = new ObjectId().toString(); //Generates unique id
+        newTicket.setTicketId(ticketId);
+
         collection.insertOne(newTicket);
-        closeConnection();
+        ////closeConnection();
+    }
+
+    public int buyTicket(String tc, String flightId, int seatNumber){
+        MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
+        ObjectId ticketId = new ObjectId(); //Generates unique id
+        String ticketIdStr = ticketId.toString();
+
+        Flight flight = getFlightById(flightId);
+        List<Integer> sittingPlan = flight.getSittingPlan();
+        if(sittingPlan.get(seatNumber) == 0){
+            sittingPlan.set(seatNumber, 1);
+            flight.setSittingPlan(sittingPlan);
+        }else{
+            return 400; //Bilet alınmış.
+        }
+        updateFlight(flight);
+        Ticket newTicket = new Ticket(ticketIdStr, tc, flightId, seatNumber);
+        collection.insertOne(newTicket);
+        return 200;
     }
 
 
@@ -257,18 +319,10 @@ public class MongoConnector {
 
 
 
-
-
-
-
-
-    private void connect(){
-
-    }
-
-    public void closeConnection(){
+    /*
+    public void //closeConnection(){
         mongoClient.close();
-    }
+    }*/
 
     private void printResults(List<Document> documents){
 

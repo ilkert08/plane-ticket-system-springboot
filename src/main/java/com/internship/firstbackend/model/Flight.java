@@ -12,8 +12,9 @@ public class Flight {
     private String planeId;
     private String flightDate; //TODO Calendar veri tipi mongo db kabul etmiyor!!
     private List<Integer> sittingPlan;
+    private int price;
 
-    public Flight(String flightId, String departure, String arrival, Float flightTime, String planeId, String flightDate, List<Integer> sittingPlan ) {
+    public Flight(String flightId, String departure, String arrival, Float flightTime, String planeId, String flightDate, List<Integer> sittingPlan, int price ) {
         this.flightId = flightId;
         this.departure = departure;
         this.arrival = arrival;
@@ -21,6 +22,7 @@ public class Flight {
         this.planeId = planeId;
         this.flightDate = flightDate;
         this.sittingPlan = sittingPlan;
+        this.price = price;
     }
 
 
@@ -80,6 +82,13 @@ public class Flight {
         this.sittingPlan = sittingPlan;
     }
 
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
 
     @Override
     public String toString() {
@@ -89,8 +98,9 @@ public class Flight {
                 ", arrival='" + arrival + '\'' +
                 ", flightTime=" + flightTime +
                 ", planeId='" + planeId + '\'' +
-                ", flightDate=" + flightDate +
+                ", flightDate='" + flightDate + '\'' +
                 ", sittingPlan=" + sittingPlan +
+                ", price=" + price +
                 '}';
     }
 }

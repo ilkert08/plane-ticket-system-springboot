@@ -2,8 +2,19 @@
 <html>
 <body>
 
-<p>This is a paragraph.</p>
-<p>This is another paragraph.</p>
+Number: <input type="number" id="myNumber">
+
+<p>Click the button to increment the value of the number field by 5 (each time you click).</p>
+
+<button onclick="myFunction()">Try it</button>
+
+<p><strong>Note:</strong> The stepUp() method is not supported by Internet Explorer.</p>
+
+<script>
+function myFunction() {
+  document.getElementById("myNumber").stepUp(5);
+}
+</script>
 
 </body>
 </html>

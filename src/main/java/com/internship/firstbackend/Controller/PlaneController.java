@@ -28,8 +28,6 @@ public class PlaneController {
     public ArrayList<Plane> getAllPlanes(){
         MongoConnector mongoConnection = new MongoConnector();
         planeList = mongoConnection.getPlanes();
-        mongoConnection.closeConnection();
-
         return planeList;
     }
 

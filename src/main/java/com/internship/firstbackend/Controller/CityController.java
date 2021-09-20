@@ -1,9 +1,7 @@
 package com.internship.firstbackend.Controller;
 
 import com.internship.firstbackend.dbconnector.MongoConnector;
-import com.internship.firstbackend.model.Airport;
 import com.internship.firstbackend.model.City;
-import com.internship.firstbackend.model.Plane;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -23,9 +21,9 @@ public class CityController {
         City city2 = new City("35", "İzmir", "Türkiye");
         City city3 = new City("55", "Samsun","Türkiye");
 
-        cityList.add(city1);
-        cityList.add(city2);
-        cityList.add(city3);
+        //cityList.add(city1);
+        //cityList.add(city2);
+        //cityList.add(city3);
 
     }
 
@@ -40,7 +38,6 @@ public class CityController {
     public ArrayList<City> getAllCities(){
         MongoConnector mongoConnection = new MongoConnector();
         cityList = mongoConnection.getCities();
-        mongoConnection.closeConnection();
         return cityList;
     }
 

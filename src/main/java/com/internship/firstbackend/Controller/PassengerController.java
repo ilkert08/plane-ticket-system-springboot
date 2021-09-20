@@ -33,7 +33,6 @@ public class PassengerController {
     public ArrayList<Passenger> getAllPassengers(){
         MongoConnector mongoConnection = new MongoConnector();
         passengerList = mongoConnection.getPassengers();
-        mongoConnection.closeConnection();
         return passengerList;
     }
 

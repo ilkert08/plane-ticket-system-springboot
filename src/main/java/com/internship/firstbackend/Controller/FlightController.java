@@ -38,7 +38,6 @@ public class FlightController {
     public ArrayList<Flight> getAllFlights(){
         MongoConnector mongoConnection = new MongoConnector();
         flightList = mongoConnection.getFlights();
-        mongoConnection.closeConnection();
         return flightList;
     }
 
