@@ -1,6 +1,8 @@
 package com.internship.firstbackend.dbconnector;
 
-import com.internship.firstbackend.model.*;
+import com.internship.firstbackend.model.datamodels.*;
+import com.internship.firstbackend.model.requestmodels.PassengerFlightsRequest;
+import com.internship.firstbackend.model.requestmodels.TicketBuyRequest;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
@@ -27,6 +29,20 @@ public class MongoConnector {
     //private final ConnectionString mongoUrl = new ConnectionString("mongodb://user1:Password.12345@cluster0-shard-00-00.gxrol.mongodb.net:27017,cluster0-shard-00-01.gxrol.mongodb.net:27017,cluster0-shard-00-02.gxrol.mongodb.net:27017/flightDB?ssl=true&replicaSet=atlas-bkrq6u-shard-0&authSource=admin&retryWrites=true&w=majority");
     private final ConnectionString mongoUrl = new ConnectionString("mongodb+srv://user1:Password.12345@cluster0.gxrol.mongodb.net/flightDB?retryWrites=true&w=majority");
 
+
+    private static MongoConnector single_instance = null;
+
+    // Method
+    // Static method to create instance of Singleton class
+    public static MongoConnector Singleton(){
+        // To ensure only one instance is created
+        if (single_instance == null) {
+            single_instance = new MongoConnector();
+        }
+        return single_instance;
+    }
+
+
     public MongoConnector(){
         CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());;
         CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
@@ -51,23 +67,13 @@ public class MongoConnector {
             planeList.add(mongoPlane);
             System.out.println(mongoPlane.toString());
         }
-        ////closeConnection();
         return planeList;
     }
 
     public Plane getPlaneById(String requestedPlaneId){
         MongoCollection<Plane> collection = database.getCollection("planes", Plane.class);
-        List<Plane> planes = collection.find().into(new ArrayList<Plane>());
-        System.out.println("Requested plane:");
-        for (Plane mongoPlane : planes) {
-            if(mongoPlane.getPlaneId().equals(requestedPlaneId)){
-                System.out.println(mongoPlane);
-                //closeConnection();
-                return mongoPlane;
-            }
-        }
-        //closeConnection();
-        return null;
+        Plane mongoPlane = collection.find(Filters.eq("planeId", requestedPlaneId)).first();
+        return mongoPlane;
     }
 
     public void addPlane(Plane newPlane){
@@ -75,9 +81,7 @@ public class MongoConnector {
 
         String planeId = new ObjectId().toString(); //Generates unique id
         newPlane.setPlaneId(planeId);
-
         collection.insertOne(newPlane);
-        //closeConnection();
     }
 
 
@@ -91,23 +95,13 @@ public class MongoConnector {
             cityList.add(mongoCity);
             System.out.println(mongoCity.toString());
         }
-        //closeConnection();
         return cityList;
     }
 
     public City getCityById(String requestedCityId){
         MongoCollection<City> collection = database.getCollection("cities", City.class);
-        List<City> cities = collection.find().into(new ArrayList<City>());
-        System.out.println("Requested City:");
-        for (City mongoCity : cities) {
-            if(mongoCity.getCityId().equals(requestedCityId)){
-                System.out.println(mongoCity);
-                //closeConnection();
-                return mongoCity;
-            }
-        }
-        //closeConnection();
-        return null;
+        City mongoCity = collection.find(Filters.eq("cityId", requestedCityId)).first();
+        return mongoCity;
     }
 
     public void addCity(City newCity){
@@ -117,7 +111,6 @@ public class MongoConnector {
         newCity.setCityId(cityId);
 
         collection.insertOne(newCity);
-        //closeConnection();
     }
 
 
@@ -131,23 +124,13 @@ public class MongoConnector {
             airportList.add(mongoAirport);
             System.out.println(mongoAirport.toString());
         }
-        //closeConnection();
         return airportList;
     }
 
     public Airport getAirportById(String requestedAirportId){
         MongoCollection<Airport> collection = database.getCollection("airports", Airport.class);
-        List<Airport> airports = collection.find().into(new ArrayList<Airport>());
-        System.out.println("Requested airport:");
-        for (Airport mongoAirport : airports) {
-            if(mongoAirport.getCityId().equals(requestedAirportId)){
-                System.out.println(mongoAirport);
-                //closeConnection();
-                return mongoAirport;
-            }
-        }
-        //closeConnection();
-        return null;
+        Airport mongoAirport = collection.find(Filters.eq("airportId", requestedAirportId)).first();
+        return mongoAirport;
     }
 
     public void addAirport(Airport newAirport){
@@ -157,7 +140,6 @@ public class MongoConnector {
         newAirport.setAirportId(airportId);
 
         collection.insertOne(newAirport);
-        //closeConnection();
     }
 
 
@@ -171,22 +153,13 @@ public class MongoConnector {
             flightList.add(mongoFlight);
             System.out.println(mongoFlight.toString());
         }
-        //closeConnection();
         return flightList;
     }
 
     public Flight getFlightById(String requestedFlightId){
         MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
-        List<Flight> flights = collection.find().into(new ArrayList<Flight>());
-        System.out.println("Requested flight:");
-        for (Flight mongoFlight : flights) {
-            if(mongoFlight.getFlightId().equals(requestedFlightId)){
-                System.out.println(mongoFlight);
-                //closeConnection();
-                return mongoFlight;
-            }
-        }
-        return null;
+        Flight mongoFlight = collection.find(Filters.eq("flightId", requestedFlightId)).first();
+        return mongoFlight;
     }
 
     public void addFlight(Flight newFlight){
@@ -202,7 +175,6 @@ public class MongoConnector {
 
         MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
         collection.insertOne(newFlight);
-        //closeConnection();
     }
 
     public void updateFlight(Flight updatedFlight){
@@ -223,23 +195,13 @@ public class MongoConnector {
             passengerList.add(mongoPassenger);
             System.out.println(mongoPassenger.toString());
         }
-        //closeConnection();
         return passengerList;
     }
 
     public Passenger getPassengerById(String requestedPassengerId){
         MongoCollection<Passenger> collection = database.getCollection("passengers", Passenger.class);
-        List<Passenger> passengers = collection.find().into(new ArrayList<Passenger>());
-        System.out.println("Requested Passenger:");
-        for (Passenger mongoPassenger : passengers) {
-            if(mongoPassenger.getTc().equals(requestedPassengerId)){
-                System.out.println(mongoPassenger);
-                //closeConnection();
-                return mongoPassenger;
-            }
-        }
-        //closeConnection();
-        return null;
+        Passenger mongoPassenger = collection.find(Filters.eq("tc", requestedPassengerId)).first();
+        return mongoPassenger;
     }
 
     public void addPassenger(Passenger newPassenger){
@@ -249,7 +211,6 @@ public class MongoConnector {
         newPassenger.setTc(passengerId);
 
         collection.insertOne(newPassenger);
-        //closeConnection();
     }
 
 
@@ -262,23 +223,13 @@ public class MongoConnector {
             ticketList.add(mongoTicket);
             System.out.println(mongoTicket.toString());
         }
-        //closeConnection();
         return ticketList;
     }
 
     public Ticket getTicketById(String requestedTicketId){
         MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
-        List<Ticket> tickets = collection.find().into(new ArrayList<Ticket>());
-        System.out.println("Requested Ticket:");
-        for (Ticket mongoTicket : tickets) {
-            if(mongoTicket.getTicketId().equals(requestedTicketId)){
-                System.out.println(mongoTicket);
-                //closeConnection();
-                return mongoTicket;
-            }
-        }
-        //closeConnection();
-        return null;
+        Ticket mongoTicket = collection.find(Filters.eq("ticketId", requestedTicketId)).first();
+        return mongoTicket;
     }
 
     public void addTicket(Ticket newTicket){
@@ -288,10 +239,15 @@ public class MongoConnector {
         newTicket.setTicketId(ticketId);
 
         collection.insertOne(newTicket);
-        ////closeConnection();
     }
 
-    public int buyTicket(String tc, String flightId, int seatNumber){
+    public int buyTicket(TicketBuyRequest ticketBuyRequest){
+
+
+        String tc = ticketBuyRequest.getTc();
+        String flightId = ticketBuyRequest.getFlightId();
+        int seatNumber = ticketBuyRequest.getSeatNumber();
+
         MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
         ObjectId ticketId = new ObjectId(); //Generates unique id
         String ticketIdStr = ticketId.toString();
@@ -307,8 +263,19 @@ public class MongoConnector {
         updateFlight(flight);
         Ticket newTicket = new Ticket(ticketIdStr, tc, flightId, seatNumber);
         collection.insertOne(newTicket);
-        return 200;
+        return 200; //Bilet başarıylaa satın alındı.
     }
+
+
+    public ArrayList<Ticket> getTicketsOfPassenger(PassengerFlightsRequest passengerFlightsRequest){
+        String tc = passengerFlightsRequest.getTc();
+        MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
+        ArrayList<Ticket> ticketList = collection.find(Filters.eq("tc", tc)).into(new ArrayList<Ticket>());
+        return ticketList;
+    }
+
+
+
 
 
 

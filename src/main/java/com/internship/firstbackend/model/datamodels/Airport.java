@@ -1,4 +1,4 @@
-package com.internship.firstbackend.model;
+package com.internship.firstbackend.model.datamodels;
 
 import java.util.Arrays;
 import java.util.List;

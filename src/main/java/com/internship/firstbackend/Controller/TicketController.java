@@ -1,9 +1,9 @@
 package com.internship.firstbackend.Controller;
 
 import com.internship.firstbackend.dbconnector.MongoConnector;
-import com.internship.firstbackend.model.Passenger;
-import com.internship.firstbackend.model.Ticket;
-import com.internship.firstbackend.model.Ticket;
+import com.internship.firstbackend.model.datamodels.Ticket;
+import com.internship.firstbackend.model.requestmodels.PassengerFlightsRequest;
+import com.internship.firstbackend.model.requestmodels.TicketBuyRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -11,10 +11,13 @@ import java.util.ArrayList;
 @RestController
 public class TicketController {
     private ArrayList<Ticket> ticketList;
+    private MongoConnector mongoConnection;
 
 
     public TicketController(){
         ticketList = new ArrayList<Ticket>();
+        mongoConnection = MongoConnector.Singleton();
+
 
         /*
         Ticket ticket1 = new Ticket("id1", "tc1", "flight1", "300");
@@ -30,16 +33,23 @@ public class TicketController {
     }
 
 
+
+    @GetMapping("/tickettest")
+    public String ticketTest(){
+        ticketList = mongoConnection.getTickets();
+        return mongoConnection.toString();
+    }
+
+
+
     @GetMapping("/tickets")
     public ArrayList<Ticket> getAllTickets(){
-        MongoConnector mongoConnection = new MongoConnector();
         ticketList = mongoConnection.getTickets();
         return ticketList;
     }
 
     @GetMapping("/ticket")
     public Ticket getTicketById(@RequestParam(value = "id", defaultValue = "id1") String requestedTicketId){
-        MongoConnector mongoConnection = new MongoConnector();
         Ticket requestedTicket = mongoConnection.getTicketById(requestedTicketId);
 
         if(requestedTicket != null){
@@ -50,16 +60,13 @@ public class TicketController {
 
     @PostMapping("/newTicket")
     public Ticket addTicket(@RequestBody Ticket newTicket){
-        MongoConnector mongoConnection = new MongoConnector();
         mongoConnection.addTicket(newTicket);
         return newTicket;
     }
 
-    @GetMapping("/buyticket")
-    public String buyNewTicket(@RequestParam(value = "tc") String tcNo, @RequestParam(value = "flightid") String flightId,
-                             @RequestParam(value = "seatnumber") int seatNumber){
-        MongoConnector mongoConnection = new MongoConnector();
-        int result = mongoConnection.buyTicket(tcNo, flightId, seatNumber);
+    @PostMapping("/buyticket")
+    public String buyNewTicket(@RequestBody TicketBuyRequest ticketBuyRequest){
+        int result = mongoConnection.buyTicket(ticketBuyRequest);
         if(result == 200){
             return "Bilet başarıyla satın alındı.";
         }else if(result == 400){
@@ -67,6 +74,14 @@ public class TicketController {
         }else{
             return "Başka bir hata.";
         }
+    }
+
+    @PostMapping("/passengertickets")
+    public ArrayList<Ticket> passengerTickets(@RequestBody PassengerFlightsRequest passengerFlightsRequest){
+        System.out.println(passengerFlightsRequest);
+        ArrayList<Ticket> passengerTicketList;
+        passengerTicketList = mongoConnection.getTicketsOfPassenger(passengerFlightsRequest);
+        return passengerTicketList;
     }
 
 

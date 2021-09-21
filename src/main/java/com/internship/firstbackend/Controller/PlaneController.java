@@ -1,8 +1,7 @@
 package com.internship.firstbackend.Controller;
 
 import com.internship.firstbackend.dbconnector.MongoConnector;
-import com.internship.firstbackend.model.Plane;
-import org.json.simple.JSONObject;
+import com.internship.firstbackend.model.datamodels.Plane;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -11,29 +10,28 @@ import java.util.ArrayList;
 public class PlaneController {
 
     private ArrayList<Plane> planeList;
+    private MongoConnector mongoConnection;
 
     public PlaneController(){
         planeList = new ArrayList<Plane>();
-        Plane plane1 = new Plane("id1", 100, "Boeing", "E5000", 300.5F);
-        Plane plane2 = new Plane("id2", 100, "Boeing", "E5000", 300.5F);
-        Plane plane3 = new Plane("id3", 100, "Boeing", "E5000", 300.5F);
+        mongoConnection = MongoConnector.Singleton();
+    }
 
-        //planeList.add(plane1);
-        //planeList.add(plane2);
-        //planeList.add(plane3);
+    @GetMapping("/planetest")
+    public String planeTest(){
+        planeList = mongoConnection.getPlanes();
+        return mongoConnection.toString();
     }
 
 
     @GetMapping("/planes")
     public ArrayList<Plane> getAllPlanes(){
-        MongoConnector mongoConnection = new MongoConnector();
         planeList = mongoConnection.getPlanes();
         return planeList;
     }
 
     @GetMapping("/plane")
     public Plane getPlaneById(@RequestParam(value = "id", defaultValue = "id1") String requestedPlaneId){
-        MongoConnector mongoConnection = new MongoConnector();
         Plane requestedPlane = mongoConnection.getPlaneById(requestedPlaneId);
 
         if(requestedPlane != null){
@@ -53,7 +51,6 @@ public class PlaneController {
 
     @PostMapping("/newplane")
     public Plane addPlane(@RequestBody Plane newPlane){
-        MongoConnector mongoConnection = new MongoConnector();
         mongoConnection.addPlane(newPlane);
         return newPlane;
     }
