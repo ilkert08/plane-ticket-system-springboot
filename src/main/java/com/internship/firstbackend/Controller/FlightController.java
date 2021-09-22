@@ -2,9 +2,13 @@ package com.internship.firstbackend.Controller;
 
 import com.internship.firstbackend.dbconnector.MongoConnector;
 import com.internship.firstbackend.model.datamodels.Flight;
+import com.internship.firstbackend.model.datamodels.Passenger;
+import com.internship.firstbackend.model.requestmodels.PassengerFlightsRequest;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Random;
 
 @RestController
 public class FlightController {
@@ -39,5 +43,17 @@ public class FlightController {
         mongoConnection.addFlight(newFlight);
         return newFlight;
     }
+
+
+    @GetMapping("/passengersinflight")
+    public ArrayList<Passenger> getPassengerListOfFlight(@RequestParam(value = "flightid", defaultValue = "id1") String flightId){
+        ArrayList<Passenger> passengerListOfFlight = mongoConnection.getPassengerListOfFlight(flightId);
+        return passengerListOfFlight;
+    }
+
+
+
+
+
 
 }

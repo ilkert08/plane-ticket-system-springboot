@@ -16,8 +16,13 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.types.ObjectId;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
@@ -107,8 +112,8 @@ public class MongoConnector {
     public void addCity(City newCity){
         MongoCollection<City> collection = database.getCollection("cities", City.class);
 
-        String cityId = new ObjectId().toString(); //Generates unique id
-        newCity.setCityId(cityId);
+        //String cityId = new ObjectId().toString(); //Generates unique id
+        //newCity.setCityId(cityId);
 
         collection.insertOne(newCity);
     }
@@ -163,6 +168,9 @@ public class MongoConnector {
     }
 
     public void addFlight(Flight newFlight){
+        MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
+
+
         String flightId = new ObjectId().toString(); //Generates unique id
         newFlight.setFlightId(flightId);
 
@@ -172,8 +180,29 @@ public class MongoConnector {
         }
         newFlight.setSittingPlan(sittingPlan);
 
+        Airport departureAirport = getAirportById(newFlight.getDeparture());
+        Airport arrivalAirport = getAirportById(newFlight.getArrival());
+        Plane plane = getPlaneById(newFlight.getPlaneId());
 
-        MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
+        float planeSpeed = plane.getPlaneSpeed();
+        List<Double> departureCoordinates = departureAirport.getCoordinate();
+        List<Double> arrivalCoordinates = arrivalAirport.getCoordinate();
+
+        double departureAirportLatitude = departureCoordinates.get(0);
+        double departureAirportLongitude = departureCoordinates.get(1);
+
+        double arrivalAirportLatitude = arrivalCoordinates.get(0);
+        double arrivalAirportLongitude = arrivalCoordinates.get(1);
+
+        int distanceOfAirports = distanceBetweenAirports(departureAirportLatitude, arrivalAirportLatitude,
+                departureAirportLongitude, arrivalAirportLongitude); //Meters
+
+
+        planeSpeed = planeSpeed * 1000; // Kilometers to meters
+        float flightTime = distanceOfAirports / planeSpeed;
+        newFlight.setFlightTime(flightTime);
+        newFlight.setFlightDate(randomFlightDate());
+
         collection.insertOne(newFlight);
     }
 
@@ -183,6 +212,19 @@ public class MongoConnector {
         //System.out.println(flight);
     }
 
+    public ArrayList<Passenger> getPassengerListOfFlight(String flightId) {
+
+        MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
+        ArrayList<Ticket> ticketList = collection.find(Filters.eq("flightId", flightId))
+                .into(new ArrayList<Ticket>());
+        ArrayList<Passenger> passengerList = new ArrayList<>();
+        for(Ticket ticket : ticketList){
+            String passengerId = ticket.getTc();
+            Passenger newPassenger = getPassengerById(passengerId);
+            passengerList.add(newPassenger);
+        }
+        return passengerList;
+    }
 
 
 
@@ -207,8 +249,10 @@ public class MongoConnector {
     public void addPassenger(Passenger newPassenger){
         MongoCollection<Passenger> collection = database.getCollection("passengers", Passenger.class);
 
-        String passengerId = new ObjectId().toString(); //Generates unique id
-        newPassenger.setTc(passengerId);
+        //String passengerId = new ObjectId().toString(); //Generates unique id
+        //newPassenger.setTc(passengerId);
+
+        newPassenger.setBorndate(randomBornDate());
 
         collection.insertOne(newPassenger);
     }
@@ -243,27 +287,60 @@ public class MongoConnector {
 
     public int buyTicket(TicketBuyRequest ticketBuyRequest){
 
+        MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
 
         String tc = ticketBuyRequest.getTc();
         String flightId = ticketBuyRequest.getFlightId();
         int seatNumber = ticketBuyRequest.getSeatNumber();
-
-        MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
-        ObjectId ticketId = new ObjectId(); //Generates unique id
-        String ticketIdStr = ticketId.toString();
 
         Flight flight = getFlightById(flightId);
         List<Integer> sittingPlan = flight.getSittingPlan();
         if(sittingPlan.get(seatNumber) == 0){
             sittingPlan.set(seatNumber, 1);
             flight.setSittingPlan(sittingPlan);
+            updateFlight(flight);
         }else{
             return 400; //Bilet alınmış.
         }
-        updateFlight(flight);
+
+        ObjectId ticketId = new ObjectId(); //Generates unique id
+        String ticketIdStr = ticketId.toString();
         Ticket newTicket = new Ticket(ticketIdStr, tc, flightId, seatNumber);
+
+        Passenger passenger = getPassengerById(tc);
+        int ticketPrice = calculateTicketPrice(passenger, flight.getPrice());
+        newTicket.setTicketPrice(ticketPrice);
+
         collection.insertOne(newTicket);
         return 200; //Bilet başarıylaa satın alındı.
+    }
+
+    private int calculateTicketPrice(Passenger passenger, int basePrice) {
+
+        int newPrice = basePrice;
+
+        String bornDate = passenger.getBorndate();
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime now = LocalDateTime.now();
+
+        LocalDate date1 = LocalDate.parse(bornDate, dtf);
+        long days = ChronoUnit.DAYS.between(date1, now);
+        int years = (int)days / 360;
+
+
+        System.out.println(bornDate);
+        System.out.println(dtf.format(now));
+        System.out.println("Difference:");
+        System.out.println("days: " + days);
+        System.out.println("years: " + years);
+
+
+        if(years <= 10){
+            newPrice /= 2;
+        }
+        System.out.println("New price: " + newPrice);
+        return newPrice;
     }
 
 
@@ -280,6 +357,61 @@ public class MongoConnector {
 
 
 
+    private String randomFlightDate(){
+        Random random = new Random();
+        int minDay = (int) LocalDate.of(2021, 11, 1).toEpochDay();
+        int maxDay = (int) LocalDate.of(2022, 1, 1).toEpochDay();
+        long randomDay = minDay + random.nextInt(maxDay - minDay);
+        LocalDate randomBirthDate = LocalDate.ofEpochDay(randomDay);
+        String dateAndTime = randomBirthDate.toString() + ":10-00"; //YYYY-MM-DD:HH:MM
+        //System.out.println(dateAndTime);
+        return dateAndTime;
+    }
+
+    private String randomBornDate(){
+        Random random = new Random();
+        int minDay = (int) LocalDate.of(1920, 1, 1).toEpochDay();
+        int maxDay = (int) LocalDate.of(2021, 9, 1).toEpochDay();
+        long randomDay = minDay + random.nextInt(maxDay - minDay);
+        LocalDate randomBirthDate = LocalDate.ofEpochDay(randomDay);
+        String dateAndTime = randomBirthDate.toString(); //YYYY-MM-DD:HH:MM
+        //System.out.println(dateAndTime);
+        return dateAndTime;
+    }
+
+
+
+
+
+    /**
+     * Calculate distance between two points in latitude and longitude taking
+     * into account height difference. If you are not interested in height
+     * difference pass 0.0. Uses Haversine method as its base.
+     *
+     * lat1, lon1 Start point lat2, lon2 End point el1 Start altitude in meters
+     * el2 End altitude in meters
+     * returns Distance in Meters
+     */
+    public int distanceBetweenAirports(double lat1, double lat2, double lon1, double lon2) {
+
+        double el1 = 0; //Rakım 0 gibi davranıyoruz.
+        double el2 = 0; //Rakım 0 gibi davranıyoruz.
+        final int R = 6371; // Radius of the earth
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c * 1000; // convert to meters
+
+        double height = el1 - el2;
+
+        distance = Math.pow(distance, 2) + Math.pow(height, 2);
+
+        return (int) Math.sqrt(distance);
+    }
 
 
 
@@ -294,9 +426,5 @@ public class MongoConnector {
     private void printResults(List<Document> documents){
 
     }
-
-
-
-
 
 }

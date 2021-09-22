@@ -7,9 +7,9 @@ public class Airport {
     private String airportId;
     private String name;
     private String cityId;
-    private List<String> coordinate;
+    private List<Double> coordinate;
 
-    public Airport(String airportId, String name, String cityId, List<String> coordinate) {
+    public Airport(String airportId, String name, String cityId, List<Double> coordinate) {
         this.airportId = airportId;
         this.name = name;
         this.cityId = cityId;
@@ -32,7 +32,7 @@ public class Airport {
         return cityId;
     }
 
-    public List<String> getCoordinate() {
+    public List<Double> getCoordinate() {
         return coordinate;
     }
 
@@ -49,7 +49,7 @@ public class Airport {
         this.cityId = cityId;
     }
 
-    public void setCoordinate(List<String> coordinate) {
+    public void setCoordinate(List<Double> coordinate) {
         this.coordinate = coordinate;
     }
 

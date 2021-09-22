@@ -6,6 +6,8 @@ public class Ticket {
     private String tc;
     private String flightId;
     private int seatNumber;
+    private int ticketPrice;
+
 
     public Ticket(String ticketId, String tc, String flightId, int seatNumber) {
         this.ticketId = ticketId;
@@ -51,6 +53,13 @@ public class Ticket {
         this.flightId = flightId;
     }
 
+    public int getTicketPrice() {
+        return ticketPrice;
+    }
+
+    public void setTicketPrice(int ticketPrice) {
+        this.ticketPrice = ticketPrice;
+    }
 
     @Override
     public String toString() {
@@ -58,8 +67,8 @@ public class Ticket {
                 "ticketId='" + ticketId + '\'' +
                 ", tc='" + tc + '\'' +
                 ", flightId='" + flightId + '\'' +
-                ", seatNumber='" + seatNumber + '\'' +
+                ", seatNumber=" + seatNumber +
+                ", ticketPrice=" + ticketPrice +
                 '}';
     }
-
 }
