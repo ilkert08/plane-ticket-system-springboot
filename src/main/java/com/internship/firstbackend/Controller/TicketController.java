@@ -67,12 +67,21 @@ public class TicketController {
     @PostMapping("/buyticket")
     public String buyNewTicket(@RequestBody TicketBuyRequest ticketBuyRequest){
         int result = mongoConnection.buyTicket(ticketBuyRequest);
+        String message = "";
+
         if(result == 200){
-            return "Bilet başarıyla satın alındı.";
+            message = "Bilet başarıyla satın alındı.";
+            return message;
         }else if(result == 400){
-            return "Koltuk daha önce satın alınmış.";
-        }else{
-            return "Başka bir hata.";
+            message = "Koltuk daha önce satın alınmış.";
+            return message;
+        }else if(result == 401){
+            message = "Uçuş tarihi geçmiş.";
+            return message;
+        }
+        else{
+            message = "Başka bir hata.";
+            return message;
         }
     }
 

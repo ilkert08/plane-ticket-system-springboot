@@ -51,9 +51,25 @@ public class FlightController {
         return passengerListOfFlight;
     }
 
+    @GetMapping("/flights-from")
+    public ArrayList<Flight> getDepartureFlights(@RequestParam(value = "departure", defaultValue = "id1") String departureId){
+        ArrayList<Flight> flightsList = mongoConnection.flightsFrom(departureId);
+        return flightsList;
+    }
 
 
+    @GetMapping("/flights-to")
+    public ArrayList<Flight> getArrivalFlights(@RequestParam(value = "arrival", defaultValue = "id1") String arrivalId){
+        ArrayList<Flight> flightsList = mongoConnection.flightsTo(arrivalId);
+        return flightsList;
+    }
 
+    @GetMapping("/flights-between-airports")
+    public ArrayList<Flight> getArrivalFlights(@RequestParam(value = "departure", defaultValue = "id1") String departureId,
+                                               @RequestParam(value = "arrival", defaultValue = "id1") String arrivalId){
+        ArrayList<Flight> flightsList = mongoConnection.flightsBetween(departureId, arrivalId);
+        return flightsList;
+    }
 
 
 }

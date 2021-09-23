@@ -226,6 +226,49 @@ public class MongoConnector {
         return passengerList;
     }
 
+    public ArrayList<Flight> flightsFrom(String departureAirportId){ // Flights that will take off from an airport
+        ArrayList<Flight> flightList = new ArrayList<>();
+        MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
+        List<Flight> flights = collection.find(Filters.eq("departure", departureAirportId)).into(new ArrayList<Flight>());
+
+        System.out.println("Flight that take of from airport:");
+        for (Flight mongoFlight : flights) {
+            flightList.add(mongoFlight);
+            System.out.println(mongoFlight.toString());
+        }
+        return flightList;
+    }
+
+    public ArrayList<Flight> flightsTo(String arrivalAirportId){ // Flights that will take off from an airport
+        ArrayList<Flight> flightList = new ArrayList<>();
+        MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
+        List<Flight> flights = collection.find(Filters.eq("arrival", arrivalAirportId)).into(new ArrayList<Flight>());
+
+        System.out.println("Flight that will land to airport:");
+        for (Flight mongoFlight : flights) {
+            flightList.add(mongoFlight);
+            System.out.println(mongoFlight.toString());
+        }
+        return flightList;
+    }
+
+    public ArrayList<Flight> flightsBetween(String departureAirportId, String arrivalAirportId){ // Flights that will take off from an airport
+        ArrayList<Flight> flightList = new ArrayList<>();
+        MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
+        List<Flight> flights = collection
+                .find(Filters.and(Filters.eq("arrival", arrivalAirportId), Filters.eq("departure", departureAirportId)))
+                .into(new ArrayList<Flight>());
+
+
+        System.out.println("Flight between airports:");
+        for (Flight mongoFlight : flights) {
+            flightList.add(mongoFlight);
+            System.out.println(mongoFlight.toString());
+        }
+        return flightList;
+    }
+
+
 
 
     public ArrayList<Passenger> getPassengers(){
@@ -298,7 +341,6 @@ public class MongoConnector {
         if(sittingPlan.get(seatNumber) == 0){
             sittingPlan.set(seatNumber, 1);
             flight.setSittingPlan(sittingPlan);
-            updateFlight(flight);
         }else{
             return 400; //Bilet alınmış.
         }
@@ -308,36 +350,57 @@ public class MongoConnector {
         Ticket newTicket = new Ticket(ticketIdStr, tc, flightId, seatNumber);
 
         Passenger passenger = getPassengerById(tc);
-        int ticketPrice = calculateTicketPrice(passenger, flight.getPrice());
-        newTicket.setTicketPrice(ticketPrice);
+        int ticketPrice = calculateTicketPrice(passenger, flight);
+        if(ticketPrice  == -1){
+            return 401; // Eski uçuş.
+        }
 
+        newTicket.setTicketPrice(ticketPrice);
+        updateFlight(flight);
         collection.insertOne(newTicket);
         return 200; //Bilet başarıylaa satın alındı.
     }
 
-    private int calculateTicketPrice(Passenger passenger, int basePrice) {
-
-        int newPrice = basePrice;
-
+    private int calculateTicketPrice(Passenger passenger, Flight flight) {
+        int newPrice = flight.getPrice();
+        String flightDate = flight.getFlightDate();
+        flightDate = flightDate.split(":")[0]; // 2021-11-29:10-00 format. ":" öncesini almak için [0] indeksi.
         String bornDate = passenger.getBorndate();
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDateTime now = LocalDateTime.now();
 
-        LocalDate date1 = LocalDate.parse(bornDate, dtf);
-        long days = ChronoUnit.DAYS.between(date1, now);
-        int years = (int)days / 360;
 
+        LocalDateTime flightDateObj = LocalDate.parse(flightDate, dtf).atStartOfDay();;
+        int days = (int) ChronoUnit.DAYS.between(now, flightDateObj);
+
+        int maxRaise = newPrice;
+        int raise =  0;
+
+        System.out.println("Old Price:  " + newPrice);
+
+        if(days == 0){
+            days = 1;
+        } else if(days < 0){
+            return -1; // Uçuş günü geçmiş.
+        }
+
+        raise = maxRaise / days; // Gün yaklaştıkça fiyat 2 katına kadar atabilir.
+        newPrice = newPrice + raise;
+        System.out.println("Raised Price:  " + newPrice);
+
+        LocalDateTime bornDateObj = LocalDate.parse(bornDate, dtf).atStartOfDay();;
+        long days2 = ChronoUnit.DAYS.between(bornDateObj, now);
+        int years = (int)days2 / 360;
 
         System.out.println(bornDate);
         System.out.println(dtf.format(now));
         System.out.println("Difference:");
-        System.out.println("days: " + days);
+        System.out.println("days: " + days2);
         System.out.println("years: " + years);
 
-
         if(years <= 10){
-            newPrice /= 2;
+            newPrice /= 2; // Age discount.
         }
         System.out.println("New price: " + newPrice);
         return newPrice;
@@ -412,6 +475,8 @@ public class MongoConnector {
 
         return (int) Math.sqrt(distance);
     }
+
+
 
 
 
