@@ -58,7 +58,7 @@ public class TicketController {
         return null;
     }
 
-    @PostMapping("/newTicket")
+    @PostMapping("/newticket")
     public Ticket addTicket(@RequestBody Ticket newTicket){
         mongoConnection.addTicket(newTicket);
         return newTicket;

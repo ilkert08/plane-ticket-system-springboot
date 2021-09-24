@@ -18,9 +18,7 @@ public class FlightController {
     public FlightController(){
         flightList = new ArrayList<Flight>();
         mongoConnection = MongoConnector.Singleton();
-
     }
-
 
     @GetMapping("/flights")
     public ArrayList<Flight> getAllFlights(){
@@ -67,9 +65,18 @@ public class FlightController {
     @GetMapping("/flights-between-airports")
     public ArrayList<Flight> getArrivalFlights(@RequestParam(value = "departure", defaultValue = "id1") String departureId,
                                                @RequestParam(value = "arrival", defaultValue = "id1") String arrivalId){
-        ArrayList<Flight> flightsList = mongoConnection.flightsBetween(departureId, arrivalId);
+        ArrayList<Flight> flightsList = mongoConnection.flightsBetweenAirports(departureId, arrivalId);
         return flightsList;
     }
+
+    @GetMapping("/flights-between-dates")
+    public ArrayList<Flight> getFlightsBetweenDates(@RequestParam(value = "date1", defaultValue = "id1") String date1,
+                                               @RequestParam(value = "date2", defaultValue = "id1") String date2){
+        ArrayList<Flight> flightsList = mongoConnection.flightsBetweenDates(date1, date2);
+        return flightsList;
+    }
+
+
 
 
 }

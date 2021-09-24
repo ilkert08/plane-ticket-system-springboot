@@ -252,7 +252,7 @@ public class MongoConnector {
         return flightList;
     }
 
-    public ArrayList<Flight> flightsBetween(String departureAirportId, String arrivalAirportId){ // Flights that will take off from an airport
+    public ArrayList<Flight> flightsBetweenAirports(String departureAirportId, String arrivalAirportId){ // Flights that will take off from an airport
         ArrayList<Flight> flightList = new ArrayList<>();
         MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
         List<Flight> flights = collection
@@ -266,6 +266,37 @@ public class MongoConnector {
             System.out.println(mongoFlight.toString());
         }
         return flightList;
+    }
+
+    public ArrayList<Flight> flightsBetweenDates(String date1, String date2) {
+        ArrayList<Flight> flightList = new ArrayList<>();
+        MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
+        List<Flight> flights = collection
+                .find(Filters.and(Filters.gte("flightDate", date1), Filters.lte("flightDate", date2)))
+                .into(new ArrayList<Flight>());
+
+        try{
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDateTime flightDateObj;
+            String temp = "";
+
+            temp = date1.split(":")[0];
+            flightDateObj= LocalDate.parse(temp, dtf).atStartOfDay();
+            temp = date2.split(":")[0];
+            flightDateObj = LocalDate.parse(temp, dtf).atStartOfDay();
+        }catch (Exception e){
+            return null;
+        } //Eğer catch'e düşmezse valid bir tarihtir.
+
+
+
+        System.out.println("Flight between dates:");
+        for (Flight mongoFlight : flights) {
+            flightList.add(mongoFlight);
+            System.out.println(mongoFlight.toString());
+        }
+        return flightList;
+
     }
 
 
@@ -483,6 +514,7 @@ public class MongoConnector {
 
 
 
+
     /*
     public void //closeConnection(){
         mongoClient.close();
@@ -491,5 +523,6 @@ public class MongoConnector {
     private void printResults(List<Document> documents){
 
     }
+
 
 }
