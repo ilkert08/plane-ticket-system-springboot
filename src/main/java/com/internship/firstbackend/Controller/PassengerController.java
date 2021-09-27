@@ -14,9 +14,6 @@ public class PassengerController {
     public PassengerController(){
         passengerList = new ArrayList<Passenger>();
         mongoConnection = MongoConnector.Singleton();
-
-
-
     }
 
 
@@ -41,4 +38,12 @@ public class PassengerController {
         mongoConnection.addPassenger(newPassenger);
         return newPassenger;
     }
+
+    @GetMapping("/delete-passenger")
+    public String deletePassenger(@RequestParam(value = "passengerid", defaultValue = "id1") String passengerId){
+        mongoConnection.deletePassenger(passengerId);
+        return "Yolcu silindi.";
+    }
+
+
 }

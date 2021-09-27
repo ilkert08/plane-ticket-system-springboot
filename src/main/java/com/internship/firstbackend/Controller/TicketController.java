@@ -1,6 +1,7 @@
 package com.internship.firstbackend.Controller;
 
 import com.internship.firstbackend.dbconnector.MongoConnector;
+import com.internship.firstbackend.model.datamodels.Passenger;
 import com.internship.firstbackend.model.datamodels.Ticket;
 import com.internship.firstbackend.model.requestmodels.PassengerFlightsRequest;
 import com.internship.firstbackend.model.requestmodels.TicketBuyRequest;
@@ -78,19 +79,45 @@ public class TicketController {
         }else if(result == 401){
             message = "Uçuş tarihi geçmiş.";
             return message;
-        }
-        else{
+        }else if(result == 402){
+            message = "Böyle bir yolcu yok.";
+            return message;
+        }else if(result == 404){
+            message = "Böyle bir uçuş yok.";
+            return message;
+        } else{
             message = "Başka bir hata.";
             return message;
         }
     }
 
-    @PostMapping("/passengertickets")
-    public ArrayList<Ticket> passengerTickets(@RequestBody PassengerFlightsRequest passengerFlightsRequest){
-        System.out.println(passengerFlightsRequest);
+    @GetMapping("/cancel-ticket")
+    public String cancelTicket(@RequestParam(value = "ticketid", defaultValue = "id1") String ticketId){
+        int result = mongoConnection.cancelTicket(ticketId);
+        String message = "";
+        if (result == 400){
+            message = "Böyle bir bilet yok.";
+        }else if (result == 200){
+            message = "Bilet iptal edildi.";
+        }
+        return  message;
+    }
+
+
+
+
+    @GetMapping("/passenger-tickets")
+    public ArrayList<Ticket> passengerTickets(@RequestParam(value = "passengerid", defaultValue = "id1") String passengerId){
+        System.out.println(passengerId);
         ArrayList<Ticket> passengerTicketList;
-        passengerTicketList = mongoConnection.getTicketsOfPassenger(passengerFlightsRequest);
+        passengerTicketList = mongoConnection.getTicketsOfPassenger(passengerId);
         return passengerTicketList;
+    }
+
+    @GetMapping("/tickets-in-flight")
+    public ArrayList<Ticket> getTicketListOfFlight(@RequestParam(value = "flightid", defaultValue = "id1") String flightId){
+        ArrayList<Ticket> ticketListOfFlight = mongoConnection.getTicketListOfFlight(flightId);
+        return ticketListOfFlight;
     }
 
 

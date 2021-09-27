@@ -182,6 +182,8 @@ public class MongoConnector {
 
         Airport departureAirport = getAirportById(newFlight.getDeparture());
         Airport arrivalAirport = getAirportById(newFlight.getArrival());
+
+
         Plane plane = getPlaneById(newFlight.getPlaneId());
 
         float planeSpeed = plane.getPlaneSpeed();
@@ -206,11 +208,20 @@ public class MongoConnector {
         collection.insertOne(newFlight);
     }
 
-    public void updateFlight(Flight updatedFlight){
+    public void updateFlightSittingPlan(Flight updatedFlight){
         MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
         collection.updateOne(Filters.eq("flightId", updatedFlight.getFlightId()), Updates.combine(Updates.set("sittingPlan", updatedFlight.getSittingPlan())));
         //System.out.println(flight);
     }
+
+
+    //TODO
+    public void updateFlight(Flight updatedFlight){
+        MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
+        collection.replaceOne(Filters.eq("flightId", updatedFlight.getFlightId()), updatedFlight );
+        //System.out.println(flight);
+    }
+
 
     public ArrayList<Passenger> getPassengerListOfFlight(String flightId) {
 
@@ -221,10 +232,21 @@ public class MongoConnector {
         for(Ticket ticket : ticketList){
             String passengerId = ticket.getTc();
             Passenger newPassenger = getPassengerById(passengerId);
-            passengerList.add(newPassenger);
+            if(newPassenger != null){
+                passengerList.add(newPassenger);
+            }
         }
         return passengerList;
     }
+
+    public ArrayList<Ticket> getTicketListOfFlight(String flightId) {
+
+        MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
+        ArrayList<Ticket> ticketList = collection.find(Filters.eq("flightId", flightId))
+                .into(new ArrayList<Ticket>());
+        return ticketList;
+    }
+
 
     public ArrayList<Flight> flightsFrom(String departureAirportId){ // Flights that will take off from an airport
         ArrayList<Flight> flightList = new ArrayList<>();
@@ -300,6 +322,19 @@ public class MongoConnector {
     }
 
 
+    public void cancelFlight(String flightId){
+        MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
+
+        List<Ticket> tickets = getTicketListOfFlight(flightId);
+        for(Ticket ticket : tickets){
+            String ticketId = ticket.getTicketId();
+            cancelTicket(ticketId);
+        }
+        collection.deleteOne(Filters.eq("flightId", flightId));
+    }
+
+
+
 
 
     public ArrayList<Passenger> getPassengers(){
@@ -329,6 +364,18 @@ public class MongoConnector {
         newPassenger.setBorndate(randomBornDate());
 
         collection.insertOne(newPassenger);
+    }
+
+    public void deletePassenger(String passengerId){
+        MongoCollection<Passenger> collection = database.getCollection("passengers", Passenger.class);
+
+        List<Ticket> tickets = getTicketsOfPassenger(passengerId);
+        System.out.println("Size of tickets: " + tickets.size());
+        for(Ticket ticket : tickets){
+            String ticketId = ticket.getTicketId();
+            cancelTicket(ticketId);
+        }
+        collection.deleteOne(Filters.eq("tc", passengerId));
     }
 
 
@@ -368,6 +415,12 @@ public class MongoConnector {
         int seatNumber = ticketBuyRequest.getSeatNumber();
 
         Flight flight = getFlightById(flightId);
+
+        if(flight == null){
+            return 404; //Böyle bir uçuş yok.
+        }
+
+
         List<Integer> sittingPlan = flight.getSittingPlan();
         if(sittingPlan.get(seatNumber) == 0){
             sittingPlan.set(seatNumber, 1);
@@ -381,16 +434,41 @@ public class MongoConnector {
         Ticket newTicket = new Ticket(ticketIdStr, tc, flightId, seatNumber);
 
         Passenger passenger = getPassengerById(tc);
+
+        if(passenger == null){
+            return 402; //Böyle bir yolcu yok.
+        }
+
         int ticketPrice = calculateTicketPrice(passenger, flight);
         if(ticketPrice  == -1){
             return 401; // Eski uçuş.
         }
 
         newTicket.setTicketPrice(ticketPrice);
-        updateFlight(flight);
+        updateFlightSittingPlan(flight);
         collection.insertOne(newTicket);
         return 200; //Bilet başarıylaa satın alındı.
     }
+
+    public int cancelTicket(String ticketId){
+        MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
+        Ticket ticket = getTicketById(ticketId);
+        String flightId = ticket.getFlightId();
+
+        if(ticket == null){
+            return 400; // Böyle bir bilet yok.
+        }
+
+
+        int seatNumber = ticket.getSeatNumber();
+        Flight flight = getFlightById(flightId);
+        flight.getSittingPlan().set(seatNumber, 0); //Koltuk boş olarak güncellendi.
+        updateFlightSittingPlan(flight);
+        collection.deleteOne(Filters.eq("ticketId", ticketId));
+        return 200;
+    }
+
+
 
     private int calculateTicketPrice(Passenger passenger, Flight flight) {
         int newPrice = flight.getPrice();
@@ -438,6 +516,7 @@ public class MongoConnector {
     }
 
 
+    //TODO Deprecated.
     public ArrayList<Ticket> getTicketsOfPassenger(PassengerFlightsRequest passengerFlightsRequest){
         String tc = passengerFlightsRequest.getTc();
         MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
@@ -445,6 +524,12 @@ public class MongoConnector {
         return ticketList;
     }
 
+    public ArrayList<Ticket> getTicketsOfPassenger(String passengerId){
+        String tc = passengerId;
+        MongoCollection<Ticket> collection = database.getCollection("tickets", Ticket.class);
+        ArrayList<Ticket> ticketList = collection.find(Filters.eq("tc", tc)).into(new ArrayList<Ticket>());
+        return ticketList;
+    }
 
 
 
@@ -508,21 +593,6 @@ public class MongoConnector {
     }
 
 
-
-
-
-
-
-
-
-    /*
-    public void //closeConnection(){
-        mongoClient.close();
-    }*/
-
-    private void printResults(List<Document> documents){
-
-    }
 
 
 }

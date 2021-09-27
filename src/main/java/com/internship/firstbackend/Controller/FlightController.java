@@ -77,6 +77,12 @@ public class FlightController {
     }
 
 
+    @GetMapping("/cancel-flight")
+    public String cancelFlight(@RequestParam(value = "flightid", defaultValue = "id1") String flightId){
+        mongoConnection.cancelFlight(flightId);
+        return "Uçuş iptal edildi.";
+    }
+
 
 
 }
