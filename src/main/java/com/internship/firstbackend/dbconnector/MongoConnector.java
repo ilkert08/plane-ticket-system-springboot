@@ -90,6 +90,14 @@ public class MongoConnector {
     }
 
 
+    public ArrayList<Flight> getFlightListOfPlane(String planeId) {
+        MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
+        ArrayList<Flight> flightList = collection.find(Filters.eq("planeId", planeId))
+                .into(new ArrayList<Flight>());
+        return flightList;
+    }
+
+
 
     public ArrayList<City> getCities(){
         ArrayList<City> cityList = new ArrayList<>();
@@ -167,24 +175,33 @@ public class MongoConnector {
         return mongoFlight;
     }
 
-    public void addFlight(Flight newFlight){
+    public boolean addFlight(Flight newFlight){
         MongoCollection<Flight> collection = database.getCollection("flights", Flight.class);
-
 
         String flightId = new ObjectId().toString(); //Generates unique id
         newFlight.setFlightId(flightId);
 
+        Airport departureAirport = getAirportById(newFlight.getDeparture());
+        Airport arrivalAirport = getAirportById(newFlight.getArrival());
+        Plane plane = getPlaneById(newFlight.getPlaneId());
+
+        if(departureAirport == null || arrivalAirport == null || plane == null){
+            return false;
+        }
+        if(newFlight.getPrice() < 0){
+            System.out.println(newFlight.getPrice());
+            return false;
+        }
+
+        int capacity = plane.getCapacity();
         List<Integer> sittingPlan = new ArrayList<>();
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < capacity; i++) {
             sittingPlan.add(0);
         }
         newFlight.setSittingPlan(sittingPlan);
 
-        Airport departureAirport = getAirportById(newFlight.getDeparture());
-        Airport arrivalAirport = getAirportById(newFlight.getArrival());
 
 
-        Plane plane = getPlaneById(newFlight.getPlaneId());
 
         float planeSpeed = plane.getPlaneSpeed();
         List<Double> departureCoordinates = departureAirport.getCoordinate();
@@ -205,7 +222,12 @@ public class MongoConnector {
         newFlight.setFlightTime(flightTime);
         newFlight.setFlightDate(randomFlightDate());
 
-        collection.insertOne(newFlight);
+        try{
+            collection.insertOne(newFlight);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 
     public void updateFlightSittingPlan(Flight updatedFlight){
@@ -355,7 +377,7 @@ public class MongoConnector {
         return mongoPassenger;
     }
 
-    public void addPassenger(Passenger newPassenger){
+    public boolean addPassenger(Passenger newPassenger){
         MongoCollection<Passenger> collection = database.getCollection("passengers", Passenger.class);
 
         //String passengerId = new ObjectId().toString(); //Generates unique id
@@ -363,7 +385,20 @@ public class MongoConnector {
 
         newPassenger.setBorndate(randomBornDate());
 
-        collection.insertOne(newPassenger);
+        String tc = newPassenger.getTc();
+
+
+        try {
+            Integer.parseInt(tc); //Check if it is number
+            if(tc.length() != 4){ //Check if it is 4 length.
+                return  false;
+            }
+
+            collection.insertOne(newPassenger);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 
     public void deletePassenger(String passengerId){
@@ -420,9 +455,10 @@ public class MongoConnector {
             return 404; //Böyle bir uçuş yok.
         }
 
-
         List<Integer> sittingPlan = flight.getSittingPlan();
-        if(sittingPlan.get(seatNumber) == 0){
+        if(seatNumber < 0 || seatNumber >= sittingPlan.size()){
+            return 403; //Yanlış oturma numarası.
+        }else if(sittingPlan.get(seatNumber) == 0){
             sittingPlan.set(seatNumber, 1);
             flight.setSittingPlan(sittingPlan);
         }else{

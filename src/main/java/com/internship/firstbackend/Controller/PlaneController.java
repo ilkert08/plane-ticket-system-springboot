@@ -1,6 +1,8 @@
 package com.internship.firstbackend.Controller;
 
 import com.internship.firstbackend.dbconnector.MongoConnector;
+import com.internship.firstbackend.model.datamodels.Flight;
+import com.internship.firstbackend.model.datamodels.Passenger;
 import com.internship.firstbackend.model.datamodels.Plane;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,14 +47,16 @@ public class PlaneController {
         return null;
     }
 
-
-
-
-
     @PostMapping("/newplane")
     public Plane addPlane(@RequestBody Plane newPlane){
         mongoConnection.addPlane(newPlane);
         return newPlane;
+    }
+
+    @GetMapping("/flights-of-plane")
+    public ArrayList<Flight> getFlightListOfPlane(@RequestParam(value = "planeid", defaultValue = "id1") String planeId){
+        ArrayList<Flight> flightListOfPlane = mongoConnection.getFlightListOfPlane(planeId);
+        return flightListOfPlane;
     }
 
 
