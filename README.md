@@ -6,4 +6,5 @@ A plane ticket system that is written using Java and Spring Boot framework. This
 ER Diagram of the database.
 
 ![Architecture](şekil1.png)
+
 Project architecture.
